@@ -5,43 +5,30 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador</title>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> 
+
     <script type="text/javascript">
       google.charts.load('current', {'packages':['corechart']});
-      google.charts.setOnLoadCallback(drawChart);
-      
-    function drawChart() {
-      var jsonData = $.ajax({
-          url: "dados.php",
-          dataType: "json",
-          async: false
-          }).responseText;
-          
-
-          var data = new google.visualization.DataTable(jsonData);
-
-
-var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
-chart.draw(data, {width: 400, height: 240});
-    }
-
     </script>
 </head>
 
 <?php
-     $valores = isset($_POST["valores"]) ? ($_POST["valores"]) : 0;
-     $inicio = isset($_POST["inicio"]) ? ($_POST["inicio"]) : 0;
-     $fim = isset($_POST["fim"]) ? ($_POST["fim"]) : 0;
+    $valores = (int) (isset($_POST["valores"]) ? ($_POST["valores"]) : 0);
+    $inicio = (int) (isset($_POST["inicio"]) ? ($_POST["inicio"]) : 0);
+    $fim = (int) (isset($_POST["fim"]) ? ($_POST["fim"]) : 0);
 
-     $numeros = array();
-     $par = array();
-     $impar = array();
+    $numeros = array();
+    $par = array();
+    $impar = array();
     $soma = 0;
-    $média = 0; 
+    $media = 0;
     $acimas = array();
     $abaixos = array();
     $primos = array();
+    $pares = [];
+    $impares = [];
+    $divisores = 0;
     $x = 0;
     $i = $valores;
     
@@ -50,83 +37,101 @@ chart.draw(data, {width: 400, height: 240});
         mt_srand();
         for ($i = 0 ; $i < $valores; $i++) {
             $numeros[] = mt_rand($inicio, $fim);
-            echo $numeros[$i]."<br/>"; 
+            echo $numeros[$i]."<br/>";
         }
 
-        echo "Maior : " . max($numeros)."<br/>"; 
-        echo "Menor : " . min($numeros)."<br/>"; 
+        echo "Maior : " . max($numeros)."<br/>";
+        echo "Menor : " . min($numeros)."<br/>";
     
-    $pares = [];
-    $impares = [];
-    $abaixo = [];
-    $acima = [];
-    $primo  = [];
-    $divisores = 0;
+    
 
-    foreach ($numeros as $num) {
-        if ($num % 2 == 0) {
-            $pares[] = $num;
-        } else {
-            $impares[] = $num;
+        foreach ($numeros as $num) {
+            if ($num % 2 == 0) {
+                $pares[] = $num;
+            } else {
+                $impares[] = $num;
+            }
         }
-    }
   
-     echo "Pares é " ;
-     foreach ($pares as $par) {
-         echo ", ".$par;
-     }
-
-     echo "</br> Impares é " ;
-     foreach ($impares as $impar) {
-         echo ", ".$impar;
-     }
-
-     for ( $i = 0 ; $i < $valores; $i++){
-        $soma = $numeros[$i] + $soma;
-    }
-    echo "</br>Soma : ". $soma;
-    echo "</br>Média : " . ($soma/$valores);
-
-    for ($i = 0 ; $i < $valores; $i++) {
-        if ($numeros[$i] >= ($soma/$valores)){
-            $acima[] = $numeros[$i];
-        } else {
-            $abaixo[] = $numeros[$i];
+        echo "Pares é " ;
+        foreach ($pares as $par) {
+            echo ", ".$par;
         }
-    }
-    echo "</br> Acima da Média é " ;
-    foreach ($acima as $acimas) {
-        echo ", ".$acimas;
-    }
 
-    echo "</br> Abaixo da Média é " ;
-    foreach ($abaixo as $abaixos) {
-        echo ", ".$abaixos;
-    }
+        echo "</br> Impares é " ;
+        foreach ($impares as $impar) {
+            echo ", ".$impar;
+        }
 
+        $soma = array_sum($numeros);
+        $media = ($soma/count($numeros));
+        echo "</br>Soma : ". $soma;
+        echo "</br>Média : " . $media;
 
-    for ($i = 2 ; $i < $valores; $i++) {
+        for ($i = 0 ; $i < count($numeros); $i++) {
+            if ($numeros[$i] >= $media) {
+                $acimas[] = $numeros[$i];
+            } else {
+                $abaixos[] = $numeros[$i];
+            }
+        }
+        echo "</br> Acima da Média é " ;
+        foreach ($acimas as $acima) {
+            echo ", ".$acima;
+        }
 
-            if (fmod($numeros[$i],$i) != 0) {       
-                $primo[$i] = $numeros[$i];
+        echo "</br> Abaixo da Média é " ;
+        foreach ($abaixos as $abaixo) {
+            echo ", ".$abaixo;
+        }
+        function isPrime($n)
+        {
+            if ($n <= 1) {
+                return false;
+            }
+            for ($i = 2; $i < $n; $i++) {
+                if ($n % $i == 0) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        for ($i = 0 ; $i < count($numeros); $i++) {
+            if (isPrime($numeros[$i])) {
+                $primos[] = $numeros[$i];
             }
         }
     
-    echo "</br> Primos é " ;
-    foreach ($primo as $primos) {
-        echo ", ".$primos;
+        echo "</br> Primos é " ;
+        foreach ($primos as $primo) {
+            echo ", ".$primo;
+        }
+
+
+        $dados = [
+          "valores"=>$valores,
+          "inicio"=>$inicio,
+          "fim"=>$fim,
+          "numeros"=>$numeros,
+          "min"=>min($numeros),
+          "max"=>max($numeros),
+          "pares"=>$pares,
+          "impares"=>$impares,
+          "soma"=>$soma,
+          "media"=>$media,
+          "acima"=>$acima,
+          "abaixo"=>$abaixo,
+          "primos"=>$primos
+        ];
+        $dados_json = json_encode($dados);
+        $fp = fopen("dados.json", "w");
+        fwrite($fp, $dados_json);
+        fclose($fp);
+ 
+        $arquivo = file_get_contents('dados.json');
+        $json = json_decode($arquivo);
     }
-
-
-    $dados = array($valores,$inicio,$fim,$numeros,min($numeros), max($numeros), $pares,$impares,$soma,($soma/$valores),$acima,$abaixo,$primos);
-    $dados_json = json_encode($dados);
-    $fp = fopen("dados.json", "w");
-fwrite($fp, $dados_json);
-fclose($fp);
-
-$arquivo = file_get_contents('dados.json');
-$json = json_decode($arquivo);
-}
 
 
 ?>
@@ -143,8 +148,49 @@ $json = json_decode($arquivo);
 <br>
 <input type="submit"> 
  
-<div id="chart_div"></div>
+<div id = "container" style = "width: 550px; height: 400px; margin: 0 auto"></div>
+<script language = "JavaScript">
+         function drawChart() {
+            
+            var jsonData = JSON.parse($.ajax({
+              url: "dados.php",
+              dataType: "json",
+              async: false
+            }).responseText);
+            console.log(jsonData);
+            
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'sequência');
+            data.addColumn('number', 'elemento');
+            data.addColumn('number', 'média');
+            data.addColumn('number', 'inicio');
+            data.addColumn('number', 'fim');
+            data.addColumn('number', 'maior');
+            data.addColumn('number', 'menor');
+            var vals = [];
+            jsonData["numeros"].forEach(el => vals.push([String(el), el, jsonData["media"], jsonData["inicio"], jsonData["fim"], jsonData["max"], jsonData["min"]]));
+            data.addRows(vals);
+            console.log(vals);
+               
+            
+            var options = {'title' : 'Dados aleatórios gerados',
+               hAxis: {
+                  title: 'sequência',
+                  
+               },
+               vAxis: {
+                  title: 'valor'
+               },   
+               'width':550,
+               'height':400
+            };
 
+        
+            var chart = new google.visualization.LineChart(document.getElementById('container'));
+            chart.draw(data, options);
+         }
+         google.charts.setOnLoadCallback(drawChart);
+      </script>
   
  
 
